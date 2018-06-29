@@ -8,7 +8,7 @@ import 'vuetify/dist/vuetify.min.css'
 
 Vue.use(Vuetify)
 Vue.config.productionTip = false
-
+Vue.mixin(require('./mixins/storage.js'));
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
