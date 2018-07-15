@@ -4,22 +4,20 @@
       <v-flex xs2 class="elevation-5">
         <v-list dense two-line subheader>
           <v-subheader inset class="pink--text"> Lugares </v-subheader>
-          <template v-for="(place,index) in places">
-            <v-list-tile :key="index" avatar @click="selectedPlace = place">
-              <v-list-tile-avatar>
-                <img src="https://images.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn1.iconfinder.com%2Fdata%2Ficons%2Fflat-and-simple-part-1%2F128%2Flocation-512.png&f=1">
-              </v-list-tile-avatar>
-              <v-list-tile-content>
-                <v-list-tile-title v-text="place.name"></v-list-tile-title>
-                <v-list-tile-sub-title v-text="place.phone"></v-list-tile-sub-title>
-              </v-list-tile-content>
-              <v-list-tile-action>
-                <v-btn icon ripple @click.stop="selectedPlace = place">
-                  <v-icon color="grey lighten-1">edit</v-icon>
-                </v-btn>
-              </v-list-tile-action>
-            </v-list-tile>
-          </template>
+          <v-list-tile v-for="place in places" :key="place.id" avatar @click="selectedPlace = place">
+            <v-list-tile-avatar>
+              <img src="https://images.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn1.iconfinder.com%2Fdata%2Ficons%2Fflat-and-simple-part-1%2F128%2Flocation-512.png&f=1">
+            </v-list-tile-avatar>
+            <v-list-tile-content>
+              <v-list-tile-title v-text="place.name"></v-list-tile-title>
+              <v-list-tile-sub-title v-text="place.phone"></v-list-tile-sub-title>
+            </v-list-tile-content>
+            <v-list-tile-action>
+              <v-btn icon ripple @click.stop="selectedPlace = place">
+                <v-icon color="grey lighten-1">edit</v-icon>
+              </v-btn>
+            </v-list-tile-action>
+          </v-list-tile>
         </v-list>
         <v-btn @click="addPlaceMode()" dark fab fixed bottom small left color="pink">
           <v-icon>add</v-icon>
@@ -53,7 +51,7 @@
             </l-popup>
           </l-marker>
 
-          <l-marker draggable :lat-lng="[place.latlng.lat,place.latlng.lon]" v-for="(place,index) in places" :key="index" :icon="icon">
+          <l-marker draggable @moveend="movePlace($event,place)" :lat-lng="[place.latlng.lat,place.latlng.lon]" v-for="(place,index) in places" :key="index" :icon="icon">
             <l-popup>
               <div text-center style="min-width:100px">
                 <h3>
@@ -72,33 +70,33 @@
               </div>
             </l-popup>
           </l-marker>
+
         </l-map>
       </v-flex>
       <v-flex xs2 class="elevation-5">
         <v-list dense two-line subheader>
           <v-subheader inset class="primary--text"> Usuarios </v-subheader>
-          <template v-for="(user,index) in users">
-            <v-list-tile :key="index" avatar @click="select(user)">
-              <v-list-tile-avatar>
-                <img src="https://www.inbenta.com/wp-content/themes/inbenta/img/icons/avatar.svg?ver=2">
-              </v-list-tile-avatar>
-              <v-list-tile-content>
-                <v-list-tile-title v-text="user.name"></v-list-tile-title>
-                <v-list-tile-sub-title v-text="user.phone"></v-list-tile-sub-title>
-              </v-list-tile-content>
-              <v-list-tile-action>
-                <v-btn icon ripple @click.stop="selectedUser = user">
-                  <v-icon color="grey lighten-1">edit</v-icon>
-                </v-btn>
-              </v-list-tile-action>
-            </v-list-tile>
-          </template>
+          <v-list-tile v-for="user in users" :key="user.id" avatar @click.stop="getPointsFromUser(user);select(user)">
+            <v-list-tile-avatar>
+              <img src="https://www.inbenta.com/wp-content/themes/inbenta/img/icons/avatar.svg?ver=2">
+            </v-list-tile-avatar>
+            <v-list-tile-content>
+              <v-list-tile-title v-text="user.name"></v-list-tile-title>
+              <v-list-tile-sub-title v-text="user.phone"></v-list-tile-sub-title>
+            </v-list-tile-content>
+            <v-list-tile-action>
+              <v-btn icon ripple @click.stop="selectedUser = user">
+                <v-icon color="grey lighten-1">edit</v-icon>
+              </v-btn>
+            </v-list-tile-action>
+          </v-list-tile>
         </v-list>
         <v-btn @click="addUserMode()" dark fab fixed bottom small right color="primary">
           <v-icon>add</v-icon>
         </v-btn>
       </v-flex>
     </v-layout>
+
     <v-dialog v-model="editingUser" width="500">
       <v-card>
         <v-card-title class="headline" primary-title> Usuario</v-card-title>
@@ -113,6 +111,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
     <v-dialog v-model="editingPlace" width="500">
       <v-card>
         <v-card-title class="headline" primary-title> Lugar</v-card-title>
@@ -123,6 +122,32 @@
           <v-spacer></v-spacer>
           <v-btn flat @click="deletePlace()" color="red">Eliminar</v-btn>
           <v-btn flat @click="addPlace()" color="primary">Guardar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="showNearbys" width="500">
+      <v-card>
+        <v-card-title class="headline" primary-title>
+          Lugares mas Cercanos
+          <v-spacer></v-spacer>
+          <v-btn flat icon @click="showNearbys=false">
+            <v-icon>close</v-icon>
+          </v-btn>
+        </v-card-title>
+        <v-card-text>
+          <v-list>
+            <v-list-tile v-for="(point,index) in nearbyPoints" :key="index">
+              <v-list-tile-content>
+                <v-list-tile-title>{{ point.name }}</v-list-tile-title>
+                <v-list-tile-sub-title>{{point.distance | distance}}</v-list-tile-sub-title>
+              </v-list-tile-content>
+            </v-list-tile>
+          </v-list>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn flat @click="showNearbys = false" color="primary">Ok</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -163,12 +188,16 @@ export default {
 				html: "<div class='address-icon'></div>"
 				// iconSize: [70, 70]
 			}),
+
 			selectedUser: {},
 			selectedPlace: {},
 
 			searchQuery: "",
 			addresses: [],
 			showAddresses: false,
+
+			nearbyPoints: [],
+			showNearbys: false,
 
 			center: [4.6710425, -74.0480164],
 			zoom: 12,
@@ -179,9 +208,7 @@ export default {
 		select(u) {
 			this.center = [u.latlng.lat, u.latlng.lon];
 			this.zoom = 13;
-			console.log(u);
 		},
-
 		clickMap(ev) {
 			if (this.edition == "users") {
 				var user = {
@@ -209,6 +236,12 @@ export default {
 		moveUser(ev, user) {
 			var latlng = { lat: ev.target._latlng.lat, lon: ev.target._latlng.lng };
 			user.latlng = latlng;
+			this.saveusers(this.users);
+		},
+		movePlace(ev, place) {
+			var latlng = { lat: ev.target._latlng.lat, lon: ev.target._latlng.lng };
+			place.latlng = latlng;
+			this.saveplaces(this.places);
 		},
 		searchAddress() {
 			clearTimeout(debounce);
@@ -237,6 +270,12 @@ export default {
 		},
 		addPlaceMode() {
 			this.edition = "places";
+		},
+
+		getPointsFromUser(user) {
+			this.nearbyPoints = this.getDynamicClosetsPoints(user, this.places);
+			console.log(this.nearbyPoints);
+			this.showNearbys = true;
 		},
 
 		addUser() {

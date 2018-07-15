@@ -17,16 +17,16 @@ export default {
       return d * 1000; // distance in mts
     },
     getClosetsPoints(origin, points = [], limit = 3) {
-      var results = points.splice()
+      var results = points.slice()
       results.forEach((p) => {
-        p.distance = getDistanceFromLatLon(origin, p);
+        p.distance = this.getDistanceFromLatLon(origin, p.latlng);
       });
       results = results.sort((a, b) => {
         return a.distance - b.distance
       })
 
-      if (limit) {
-        return results.slice(limit);
+      if (limit > 0) {
+        return results.slice(0, limit);
       }
       return results;
     },
@@ -39,14 +39,14 @@ export default {
     },
 
     getDynamicClosetsPoints(origin, points = [], limit = 3) {
-      results = [];
+      var results = [];
       if (limit > 100) limit = 100;
-      while (results.length < limit) {
-        points = points.filter((p) => {
-          return origin.lat != p.lat && origin.lon != p.lon
-        });
-        results.push(this.getClosetsPoints(origin, points, limit = 1))
+      while (results.length < limit && points.length != 0) {
+        results.push(this.getClosetsPoints(origin.latlng, points, 1)[0])
         origin = results[results.length - 1]
+        points = points.filter((p) => {
+          return origin.latlng.lat != p.latlng.lat && origin.latlng.lon != p.latlng.lon
+        });
       }
       return results;
     },

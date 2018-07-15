@@ -10,6 +10,15 @@ Vue.use(Vuetify)
 Vue.config.productionTip = false
 Vue.mixin(require('./mixins/storage.js'));
 /* eslint-disable no-new */
+
+Vue.filter('distance', function (value) {
+  if (!value) return ''
+  value = parseFloat(value.toString())
+  if (value > 1000) {
+    return (value / 1000).toFixed(1) + "Km";
+  }
+  return (value).toFixed(1) + "mts";
+})
 new Vue({
   el: '#app',
   router,
