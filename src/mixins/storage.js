@@ -1,3 +1,4 @@
+const axios = require('axios');
 export default {
   methods: {
     getDistanceFromLatLon(src, dest) {
@@ -55,19 +56,18 @@ export default {
     getLatLongFromAddress(address, viewbox = null) {
       var adds = "";
       if (viewbox) {
-        adds += `${viewbox[0][0], viewbox[0][1], viewbox[1][0], viewbox[1][1]}`
+        adds += `&bounds=${viewbox._southWest.lng}, ${viewbox._southWest.lat}, ${viewbox._northEast.lng}, ${viewbox._northEast.lat}`
       }
-
+      var api = "AIzaSyCsuPEr23p4aDj0Sf7sXD9I8qxJma58bss";
       return new Promise((resolve, reject) => {
-        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${address}${adds}`).then((response) => {
-          if (response.status !== 200) {
-            return reject(response.statusText)
-          }
-          response.json().then(function (data) {
-            resolve(data)
-          })
-        })
-      }).catch(reject)
+        axios.get("https://maps.googleapis.com/maps/api/geocode/json?key=" + api + "&address=" + encodeURIComponent(address + adds))
+          .then((response) => {
+            if (response.status !== 200) {
+              return reject(response.statusText)
+            }
+            resolve(response.data.results)
+          }).catch(reject)
+      })
 
     },
     getAddressFromLatLng(lat, lon) {
@@ -142,7 +142,7 @@ export default {
     getusers() {
       var users = localStorage.getItem('users')
       if (users) {
-        var results = JSON.parse(places)
+        var results = JSON.parse(users)
         results.forEach((r) => {
           r.assigned = null
         });
