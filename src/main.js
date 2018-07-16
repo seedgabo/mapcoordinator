@@ -5,12 +5,13 @@ import App from './App'
 import router from './router'
 import Vuetify from 'vuetify'
 import 'vuetify/dist/vuetify.min.css'
+import storage from './mixins/storage.js';
 Vue.use(Vuetify)
 Vue.config.productionTip = false
 
 
 // Mixins
-Vue.mixin(require('./mixins/storage.js').default);
+Vue.mixin(storage);
 
 
 // Filters

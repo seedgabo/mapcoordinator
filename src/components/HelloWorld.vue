@@ -121,11 +121,11 @@ L.Icon.Default.mergeOptions({
 });
 import "leaflet/dist/leaflet.css";
 import { LMap, LTileLayer, LMarker, LPopup, LTooltip, LIconDefault } from "vue2-leaflet";
-import * as mapusers from "../mixins/mapusers.js";
-import * as mapplaces from "../mixins/mapplaces.js";
+import mapusers from "../mixins/mapusers.js";
+import mapplaces from "../mixins/mapplaces.js";
 var debounce;
 export default {
-	mixins: [mapusers.default, mapplaces.default],
+	mixins: [mapusers, mapplaces],
 	components: { LMap, LTileLayer, LMarker, LPopup, LTooltip, LIconDefault },
 	data() {
 		return {
