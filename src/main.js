@@ -5,12 +5,15 @@ import App from './App'
 import router from './router'
 import Vuetify from 'vuetify'
 import 'vuetify/dist/vuetify.min.css'
-
 Vue.use(Vuetify)
 Vue.config.productionTip = false
-Vue.mixin(require('./mixins/storage.js'));
-/* eslint-disable no-new */
 
+
+// Mixins
+Vue.mixin(require('./mixins/storage.js').default);
+
+
+// Filters
 Vue.filter('distance', function (value) {
   if (!value) return ''
   value = parseFloat(value.toString())
@@ -19,6 +22,16 @@ Vue.filter('distance', function (value) {
   }
   return (value).toFixed(1) + "mts";
 })
+
+
+// Components
+Vue.component('map-user-dialog', require("./components/dialogs/UserDialog.vue").default);
+Vue.component('map-place-dialog', require("./components/dialogs/PlaceDialog.vue").default);
+Vue.component('nearby-places-dialog', require("./components/dialogs/NearbyPlaces.vue").default);
+
+
+
+
 new Vue({
   el: '#app',
   router,

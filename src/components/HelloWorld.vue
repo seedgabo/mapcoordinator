@@ -98,58 +98,15 @@
     </v-layout>
 
     <v-dialog v-model="editingUser" width="500">
-      <v-card>
-        <v-card-title class="headline" primary-title> Usuario</v-card-title>
-        <v-card-text>
-          <v-text-field v-model="selectedUser.name" label="Nombre"></v-text-field>
-          <v-text-field v-model="selectedUser.phone" label="Telefono"></v-text-field>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn flat @click="deleteUser()" color="red">Eliminar</v-btn>
-          <v-btn flat @click="addUser()" color="primary">Guardar</v-btn>
-        </v-card-actions>
-      </v-card>
+      <map-user-dialog v-if="selectedUser" v-on:add-user="addUser($event)" v-on:delete-user="deleteUser($event)" :selected-user="selectedUser"></map-user-dialog>
     </v-dialog>
 
     <v-dialog v-model="editingPlace" width="500">
-      <v-card>
-        <v-card-title class="headline" primary-title> Lugar</v-card-title>
-        <v-card-text>
-          <v-text-field v-model="selectedPlace.name" label="Nombre"></v-text-field>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn flat @click="deletePlace()" color="red">Eliminar</v-btn>
-          <v-btn flat @click="addPlace()" color="primary">Guardar</v-btn>
-        </v-card-actions>
-      </v-card>
+      <map-place-dialog v-if="selectedPlace" v-on:add-place="addPlace($event)" v-on:delete-place="deletePlace($event)" :selected-place="selectedPlace"></map-place-dialog>
     </v-dialog>
 
     <v-dialog v-model="showNearbys" width="500">
-      <v-card>
-        <v-card-title class="headline" primary-title>
-          Lugares mas Cercanos
-          <v-spacer></v-spacer>
-          <v-btn flat icon @click="showNearbys=false">
-            <v-icon>close</v-icon>
-          </v-btn>
-        </v-card-title>
-        <v-card-text>
-          <v-list>
-            <v-list-tile v-for="(point,index) in nearbyPoints" :key="index">
-              <v-list-tile-content>
-                <v-list-tile-title>{{ point.name }}</v-list-tile-title>
-                <v-list-tile-sub-title>{{point.distance | distance}}</v-list-tile-sub-title>
-              </v-list-tile-content>
-            </v-list-tile>
-          </v-list>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn flat @click="showNearbys = false" color="primary">Ok</v-btn>
-        </v-card-actions>
-      </v-card>
+      <nearby-places-dialog :places="nearbyPoints" v-on:close="showNearbys=false"></nearby-places-dialog>
     </v-dialog>
 
   </v-container>
@@ -162,53 +119,33 @@ L.Icon.Default.mergeOptions({
 	iconUrl: require("leaflet/dist/images/marker-icon.png"),
 	shadowUrl: require("leaflet/dist/images/marker-shadow.png")
 });
-
 import "leaflet/dist/leaflet.css";
 import { LMap, LTileLayer, LMarker, LPopup, LTooltip, LIconDefault } from "vue2-leaflet";
+import * as mapusers from "../mixins/mapusers.js";
+import * as mapplaces from "../mixins/mapplaces.js";
 var debounce;
 export default {
-	mixins: [require("../mixins/storage.js").default],
+	mixins: [mapusers.default, mapplaces.default],
 	components: { LMap, LTileLayer, LMarker, LPopup, LTooltip, LIconDefault },
-	mounted() {
-		this.users = this.getusers();
-		this.places = this.getplaces();
-	},
 	data() {
 		return {
-			users: [],
-			places: [],
-			address: null,
 			icon: L.icon({
 				iconUrl:
 					"https://images.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn3.iconfinder.com%2Fdata%2Ficons%2Fshopping-and-market%2F512%2Fpin_marker_location_mark_navigation_flat_icon-512.png&f=1",
 				iconSize: [33, 33]
 			}),
-			iconAddress: L.divIcon({
-				className: "address-icon-container",
-				html: "<div class='address-icon'></div>"
-				// iconSize: [70, 70]
-			}),
-
-			selectedUser: {},
-			selectedPlace: {},
-
+			address: null,
 			searchQuery: "",
 			addresses: [],
 			showAddresses: false,
-
 			nearbyPoints: [],
 			showNearbys: false,
-
 			center: [4.6710425, -74.0480164],
 			zoom: 12,
 			edition: false
 		};
 	},
 	methods: {
-		select(u) {
-			this.center = [u.latlng.lat, u.latlng.lon];
-			this.zoom = 13;
-		},
 		clickMap(ev) {
 			if (this.edition == "users") {
 				var user = {
@@ -233,16 +170,6 @@ export default {
 			}
 			this.showAddresses = false;
 		},
-		moveUser(ev, user) {
-			var latlng = { lat: ev.target._latlng.lat, lon: ev.target._latlng.lng };
-			user.latlng = latlng;
-			this.saveusers(this.users);
-		},
-		movePlace(ev, place) {
-			var latlng = { lat: ev.target._latlng.lat, lon: ev.target._latlng.lng };
-			place.latlng = latlng;
-			this.saveplaces(this.places);
-		},
 		searchAddress() {
 			clearTimeout(debounce);
 			debounce = setTimeout(() => {
@@ -263,86 +190,6 @@ export default {
 				}
 			};
 			this.center = [address.geometry.location.lat, address.geometry.location.lng];
-		},
-
-		addUserMode() {
-			this.edition = "users";
-		},
-		addPlaceMode() {
-			this.edition = "places";
-		},
-
-		getPointsFromUser(user) {
-			this.nearbyPoints = this.getDynamicClosetsPoints(user, this.places);
-			console.log(this.nearbyPoints);
-			this.showNearbys = true;
-		},
-
-		addUser() {
-			var prev = this.users.find((u) => {
-				return u.id == this.selectedUser.id;
-			});
-			if (prev) {
-				prev = this.selectedUser;
-			} else {
-				this.users.push(this.selectedUser);
-			}
-			this.selectedUser = {};
-			this.edition = null;
-			this.saveusers(this.users);
-		},
-		deleteUser() {
-			var prev = this.users.findIndex((u) => {
-				return u.id == this.selectedUser.id;
-			});
-			if (prev > -1) {
-				this.users.splice(prev, 1);
-			}
-			this.selectedUser = {};
-			this.saveusers(this.users);
-		},
-
-		addPlace() {
-			var prev = this.places.find((u) => {
-				return u.id == this.selectedPlace.id;
-			});
-			if (prev) {
-				prev = this.selectedPlace;
-			} else {
-				this.places.push(this.selectedPlace);
-			}
-			this.selectedPlace = {};
-			this.edition = null;
-			this.saveplaces(this.places);
-		},
-		deletePlace() {
-			var prev = this.places.findIndex((u) => {
-				return u.id == this.selectedPlace.id;
-			});
-			if (prev > -1) {
-				this.places.splice(prev, 1);
-			}
-			this.selectedPlace = {};
-			this.saveplaces(this.places);
-		}
-	},
-	computed: {
-		editingUser: {
-			get() {
-				return this.selectedUser.id || this.selectedUser.name;
-			},
-			set(value) {
-				return null;
-			}
-		},
-
-		editingPlace: {
-			get() {
-				return this.selectedPlace.id || this.selectedPlace.name;
-			},
-			set(value) {
-				return null;
-			}
 		}
 	}
 };

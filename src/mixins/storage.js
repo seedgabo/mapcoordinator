@@ -129,10 +129,10 @@ export default {
       var places = localStorage.getItem('places')
       if (places) {
         var results = JSON.parse(places)
-        results.forEach((r) => {
-          r.assigned = null
-        });
-        return results;
+        return results.filter((r) => {
+          r.assigned = undefined
+          return r.id
+        })
       }
       return [];
     },
@@ -143,10 +143,10 @@ export default {
       var users = localStorage.getItem('users')
       if (users) {
         var results = JSON.parse(users)
-        results.forEach((r) => {
-          r.assigned = null
-        });
-        return results;
+        return results.filter((r) => {
+          r.assigned = undefined
+          return !!r.id
+        })
       }
       return [];
     },
