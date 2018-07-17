@@ -61,7 +61,7 @@ export default {
 				})
 			};
 
-			this.$emit("reaady", data);
+			this.$emit("selected", data);
 		}
 	},
 	data() {

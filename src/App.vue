@@ -16,9 +16,15 @@
       <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
       <v-toolbar-title v-text="title"></v-toolbar-title>
       <v-spacer></v-spacer>
+      <v-btn @click="programing=true">
+        Programar
+      </v-btn>
     </v-toolbar>
     <v-content>
       <router-view/>
+      <v-dialog v-model="programing">
+        <place-user-dialog v-on:selected="showData($event)"></place-user-dialog>
+      </v-dialog>
     </v-content>
   </v-app>
 </template>
@@ -28,6 +34,7 @@ export default {
 	data() {
 		return {
 			drawer: false,
+			programing: false,
 			items: [
 				{
 					icon: "bubble_chart",
@@ -36,6 +43,12 @@ export default {
 			],
 			title: "Coordinator"
 		};
+	},
+	methods: {
+		showData($event, data) {
+			this.programing = false;
+			console.log(arguments);
+		}
 	},
 	name: "App"
 };
