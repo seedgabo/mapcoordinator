@@ -28,6 +28,10 @@
           <v-card class="search-map-input">
             <v-text-field @click.stop="showAddresses = true" v-model="searchQuery" @input="searchAddress" append-icon="search" placeholder="Buscar" solo></v-text-field>
             <v-list v-if="showAddresses">
+              <small v-if="addresses.length === 0 && !searching" text-xs-center>
+                No hay direcciones encontradas
+              </small>
+              <v-progress-linear v-if="searching" height="2" color="primary" indeterminate></v-progress-linear>
               <v-list-tile @click.stop="setAddress(address)" v-for="address in addresses" :key="address.osm_id">
                 <v-list-tile-sub-title>
                   {{address.formatted_address}}
@@ -38,20 +42,20 @@
 
           <l-tile-layer url="http://{s}.tile.osm.org/{z}/{x}/{y}.png" attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'></l-tile-layer>
 
-          <l-marker draggable @moveend="moveUser($event,user)" :lat-lng="[user.latlng.lat,user.latlng.lon]" v-for="user in users" :key="user.id">
+          <l-marker draggable @moveend="moveUser($event,u)" :lat-lng="[u.latlng.lat,u.latlng.lon]" v-for="u in users" :key="u.id + '-marker'">
             <l-popup>
               <div text-center style="min-width:100px">
                 <h3>
-                  {{user.name}}
+                  {{u.name}}
                 </h3>
                 <p>
-                  {{user.phone}}
+                  {{u.phone}}
                 </p>
               </div>
             </l-popup>
           </l-marker>
 
-          <l-marker draggable @moveend="movePlace($event,place)" :lat-lng="[place.latlng.lat,place.latlng.lon]" v-for="(place,index) in places" :key="index" :icon="icon">
+          <l-marker draggable @moveend="movePlace($event,place)" :lat-lng="[place.latlng.lat,place.latlng.lon]" v-for="(place,i) in places" :key="i" :icon="icon">
             <l-popup>
               <div text-center style="min-width:100px">
                 <h3>
@@ -61,13 +65,27 @@
             </l-popup>
           </l-marker>
 
-          <l-marker draggable :icon="iconAddress" :lat-lng="address.latlng" v-if="address">
+          <l-marker :icon="iconAddress" :lat-lng="address.latlng" v-if="address">
             <l-popup>
-              <div text-center style="min-width:100px">
-                <h3>
-                  {{address.name}}
-                </h3>
-              </div>
+              <v-menu offset-y>
+                <div slot="activator" text-center style="min-width:100px">
+                  <h3>
+                    {{address.name}}
+                  </h3>
+                </div>
+                <v-list>
+                  <v-list-tile @click="createPersonInPoint(address)">
+                    <v-list-tile-content>
+                      Crear Persona Aqui
+                    </v-list-tile-content>
+                  </v-list-tile>
+                  <v-list-tile @click="createPlaceInPoint(address)">
+                    <v-list-tile-content>
+                      Crear Lugar Aqui
+                    </v-list-tile-content>
+                  </v-list-tile>
+                </v-list>
+              </v-menu>
             </l-popup>
           </l-marker>
 
@@ -142,7 +160,8 @@ export default {
 			showNearbys: false,
 			center: [4.6710425, -74.0480164],
 			zoom: 12,
-			edition: false
+			edition: false,
+			searching: false
 		};
 	},
 	methods: {
@@ -173,12 +192,22 @@ export default {
 		searchAddress() {
 			clearTimeout(debounce);
 			debounce = setTimeout(() => {
+				if (this.searchQuery == "") {
+					return;
+				}
+				this.searching = true;
 				var bounds = this.$refs.map.mapObject.getBounds();
-				this.getLatLongFromAddress(this.searchQuery, bounds).then((resp) => {
-					console.log(resp);
-					this.addresses = resp;
-					this.showAddresses = true;
-				});
+				this.getLatLongFromAddress(this.searchQuery, bounds)
+					.then((resp) => {
+						console.log(resp);
+						this.searching = false;
+						this.addresses = resp;
+						this.showAddresses = true;
+					})
+					.catch((err) => {
+						console.error(err);
+						this.searching = false;
+					});
 			}, 2000);
 		},
 		setAddress(address) {
@@ -190,6 +219,28 @@ export default {
 				}
 			};
 			this.center = [address.geometry.location.lat, address.geometry.location.lng];
+		},
+		createPersonInPoint(ev) {
+			var user = {
+				id: this.users.length + 1,
+				name: "",
+				phone: "",
+				latlng: { lat: ev.latlng.lat, lon: ev.latlng.lng }
+			};
+			this.selectedUser = user;
+			this.$set(this, "selectedUser", user);
+			this.edition = null;
+		},
+		createPlaceInPoint(ev) {
+			var place = {
+				id: this.places.length + 1,
+				name: "",
+				latlng: { lat: ev.latlng.lat, lon: ev.latlng.lng }
+			};
+			this.selectedPlace = place;
+			this.$set(this, "selectedPlace", place);
+			this.edition = null;
+			this.showAddresses = false;
 		}
 	}
 };

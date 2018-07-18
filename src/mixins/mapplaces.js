@@ -55,6 +55,9 @@ export default {
         return this.selectedPlace.id || this.selectedPlace.name;
       },
       set(value) {
+        if (!value) {
+          this.selectedPlace = {}
+        }
         return null;
       }
     }

@@ -69,6 +69,9 @@ export default {
         return this.selectedUser.id || this.selectedUser.name;
       },
       set(value) {
+        if (!value) {
+          this.selectedUser = {}
+        }
         return null;
       }
     },
