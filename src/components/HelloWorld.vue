@@ -105,7 +105,7 @@
       <map-place-dialog v-if="selectedPlace" v-on:add-place="addPlace($event)" v-on:delete-place="deletePlace($event)" :selected-place="selectedPlace"></map-place-dialog>
     </v-dialog>
 
-    <v-dialog v-model="showNearbys" width="500">
+    <v-dialog fullscreen hide-overlay transition="dialog-bottom-transition" scrollable v-model="showNearbys" xwidth="500">
       <nearby-places-dialog :places="nearbyPoints" v-on:close="showNearbys=false"></nearby-places-dialog>
     </v-dialog>
 

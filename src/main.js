@@ -29,7 +29,7 @@ Vue.filter("distance", function (value) {
 Vue.component("map-user-dialog", require("./components/dialogs/UserDialog.vue").default);
 Vue.component("map-place-dialog", require("./components/dialogs/PlaceDialog.vue").default);
 Vue.component("nearby-places-dialog", require("./components/dialogs/NearbyPlaces.vue").default);
-Vue.component("place-user-selector", require("./components/PlaceUserSelector.vue").default);
+Vue.component("place-user-dialog", require("./components/PlaceUserSelector.vue").default);
 
 new Vue({
   el: "#app",
