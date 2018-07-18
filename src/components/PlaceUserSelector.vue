@@ -1,5 +1,5 @@
 <template>
-  <v-card>
+  <v-card fill-height>
     <v-toolbar dark color="primary">
       <v-toolbar-title class="headline" primary-title>
         Selector
@@ -10,11 +10,32 @@
       </v-btn>
     </v-toolbar>
 
-    <v-card-text style="height:80vh">
+    <v-card-text style="height:100%">
       <v-layout>
 
         <v-flex sm6 mr-3>
-          <v-text-field append-icon="search" solo placeholder="Buscar Lugares" v-model="query_places"></v-text-field>
+          <v-layout>
+            <v-flex xs11>
+              <v-text-field append-icon="search" solo placeholder="Buscar Lugares" v-model="query_places"></v-text-field>
+            </v-flex>
+            <v-flex>
+              <v-menu offset-y>
+                <v-btn slot="activator" icon flat>
+                  <v-icon> more_vert
+                  </v-icon>
+                </v-btn>
+                <v-list>
+                  <v-list-tile @click="selectAll('places')">
+                    <v-list-tile-title>Seleccionar Todos</v-list-tile-title>
+                  </v-list-tile>
+                  <v-list-tile @click="DeselectAll('places')">
+                    <v-list-tile-title>Limpiar Todos</v-list-tile-title>
+                  </v-list-tile>
+                </v-list>
+              </v-menu>
+            </v-flex>
+
+          </v-layout>
           <v-list>
             <v-list-tile @click="empty()" v-for="place in filterBy(places,query_places)" :key="place.id">
               <v-list-tile-content @click.stop="select(place,'places')">
@@ -26,8 +47,31 @@
             </v-list-tile>
           </v-list>
         </v-flex>
+
         <v-flex sm6 ml-3>
-          <v-text-field append-icon="search" solo placeholder="Buscar Personas" v-model="query_users"></v-text-field>
+          <v-layout>
+            <v-flex xs11>
+              <v-text-field append-icon="search" solo placeholder="Buscar Lugares" v-model="query_users"></v-text-field>
+            </v-flex>
+            <v-flex>
+              <v-menu offset-y>
+                <v-btn slot="activator" icon flat>
+                  <v-icon> more_vert
+                  </v-icon>
+                </v-btn>
+                <v-list>
+                  <v-list-tile @click="selectAll('users')">
+                    <v-list-tile-title>Seleccionar Todos</v-list-tile-title>
+                  </v-list-tile>
+                  <v-list-tile @click="DeselectAll('users')">
+                    <v-list-tile-title>Limpiar Todos</v-list-tile-title>
+                  </v-list-tile>
+                </v-list>
+              </v-menu>
+            </v-flex>
+
+          </v-layout>
+
           <v-list>
             <v-list-tile @click="empty()" v-for="user in filterBy(users,query_users)" :key="user.id">
               <v-list-tile-content @click.stop="select(user,'users')">
@@ -43,6 +87,7 @@
       </v-layout>
     </v-card-text>
 
+    <v-divider></v-divider>
     <v-card-actions>
       <v-spacer></v-spacer>
       <v-btn flat @click="$emit('cancel')">Cancel</v-btn>
@@ -69,11 +114,10 @@ export default {
 					return p._selected;
 				})
 			};
-			// this.$emit("selected", data);
 			var results = [];
 			var places = this.selected_places;
 			this.selected_users.forEach((u) => {
-				var points = this.getDynamicClosetsPoints(u, places);
+				var points = this.getDynamicClosetsPoints(u, places, this.places_qty);
 				results.push({
 					user: u,
 					places: points
@@ -86,6 +130,7 @@ export default {
 				});
 			});
 			this.export(this.toCSV(this.prepareToCsv(results)));
+			this.$emit("selected", data);
 		},
 
 		prepareToCsv(data) {
@@ -112,6 +157,22 @@ export default {
 			}
 			console.log(this["selected_" + type]);
 		},
+
+		selectAll(type = "users") {
+			this[type].forEach((r) => {
+				this.$set(r, "_selected", true);
+			});
+			this["selected_" + type] = this[type].map((r) => {
+				return r;
+			});
+		},
+		deselectAll(type = "users") {
+			this[type].forEach((r) => {
+				this.$set(r, "_selected", false);
+			});
+			this["selected_" + type] = [];
+		},
+
 		empty() {}
 	},
 	data() {
@@ -119,7 +180,7 @@ export default {
 			users: [],
 			selected_users: [],
 			query_users: "",
-
+			places_qty: 3,
 			places: [],
 			selected_places: [],
 			query_places: ""
