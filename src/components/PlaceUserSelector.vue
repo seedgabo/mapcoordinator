@@ -91,8 +91,21 @@
     <v-card-actions>
       <v-spacer></v-spacer>
       <v-btn flat @click="$emit('cancel')">Cancel</v-btn>
-      <v-btn flat @click="ready()" color="primary">Ok</v-btn>
+      <v-btn flat @click="prompt=true" color="primary">Ok</v-btn>
     </v-card-actions>
+
+    <v-dialog v-model="prompt" width="300">
+      <v-card>
+        <v-card-text>
+          <v-text-field v-model="places_qty" min="1" label="Cantidad de Puntos"></v-text-field>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn flat small @click="prompt= false"> Cancelar </v-btn>
+          <v-btn flat color="primary" @click="ready();prompt=false" :disabled="places_qty < 1" small>Enviar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 <script>
@@ -183,7 +196,8 @@ export default {
 			places_qty: 3,
 			places: [],
 			selected_places: [],
-			query_places: ""
+			query_places: "",
+			prompt: true
 		};
 	}
 };
