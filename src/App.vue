@@ -22,7 +22,7 @@
     </v-toolbar>
     <v-content>
       <router-view/>
-      <v-dialog fullscreen hide-overlay transition="dialog-bottom-transition" scrollable v-model="programing">
+      <v-dialog lazy fullscreen hide-overlay transition="dialog-bottom-transition" scrollable v-model="programing">
         <place-user-dialog v-on:cancel="programing=false" v-on:selected="showData($event)"></place-user-dialog>
       </v-dialog>
     </v-content>

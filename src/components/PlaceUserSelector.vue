@@ -95,7 +95,7 @@ export default {
 					nombre: d.user.name
 				};
 				d.places.forEach((p, i) => {
-					row["Punto #" + i + 1] = p.name;
+					row["Punto #" + (i + 1)] = p.name;
 				});
 				results.push(row);
 			});
