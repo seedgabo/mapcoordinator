@@ -13,6 +13,7 @@ export default {
     },
     addPlaceMode() {
       this.edition = "places";
+      this.viewMode = "map"
     },
     addPlace() {
       var prev = this.places.find((u) => {

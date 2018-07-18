@@ -17,7 +17,8 @@
       <v-toolbar-title v-text="title"></v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn dark flat @click="programing=true">
-        Programar
+        Programar &nbsp;
+        <v-icon> play_arrow</v-icon>
       </v-btn>
     </v-toolbar>
     <v-content>

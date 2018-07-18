@@ -1,6 +1,6 @@
 <template>
   <v-card fill-height>
-    <v-toolbar dark color="primary">
+    <v-toolbar dense dark color="primary">
       <v-toolbar-title class="headline" primary-title>
         Selector
       </v-toolbar-title>

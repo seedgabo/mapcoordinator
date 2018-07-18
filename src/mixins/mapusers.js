@@ -17,6 +17,7 @@ export default {
     },
     addUserMode() {
       this.edition = "users";
+      this.viewMode = "map"
     },
 
     getPointsFromUser(user) {
@@ -55,13 +56,13 @@ export default {
       }
       this.selectedUser = {};
       this.saveusers(this.users);
-    },
+    }
   },
   data() {
     return {
       users: [],
-      selectedUser: {},
-    }
+      selectedUser: {}
+    };
   },
   computed: {
     editingUser: {
@@ -70,10 +71,10 @@ export default {
       },
       set(value) {
         if (!value) {
-          this.selectedUser = {}
+          this.selectedUser = {};
         }
         return null;
       }
-    },
+    }
   }
-}
+};
