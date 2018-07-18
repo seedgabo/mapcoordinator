@@ -19,9 +19,11 @@
             <!-- <v-divider :key="place.id +'-divider'"></v-divider> -->
           </template>
         </v-list>
+        <!-- <v-tooltip right> -->
         <v-btn @click="addPlaceMode()" dark fab fixed bottom small :right="$vuetify.breakpoint.smAndDown" :left="!$vuetify.breakpoint.smAndDown" color="success" class="">
           <v-icon>add</v-icon>
         </v-btn>
+        <!-- </v-tooltip> -->
       </v-flex>
 
       <v-flex md8 xs12 sm12 :class="{'edition-mode': edition, 'hidden-sm-and-down': viewMode !== 'map' }">
@@ -111,9 +113,12 @@
             <!-- <v-divider :key="user.id + '-divider'"></v-divider> -->
           </template>
         </v-list>
-        <v-btn @click="addUserMode()" dark fab fixed bottom small right color="primary">
-          <v-icon>add</v-icon>
-        </v-btn>
+        <v-tooltip left>
+          <v-btn slot="activator" @click="addUserMode()" dark fab fixed bottom small right color="primary">
+            <v-icon>add</v-icon>
+          </v-btn>
+          <span>Agregar Usuario</span>
+        </v-tooltip>
       </v-flex>
 
       <v-btn class="hidden-md-and-up" fixed fab dark bottom left color="pink " small @click="changeViewMode() ">
