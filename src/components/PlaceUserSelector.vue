@@ -11,9 +11,9 @@
     </v-toolbar>
 
     <v-card-text style="height:100%">
-      <v-layout>
+      <v-layout wrap>
 
-        <v-flex sm6 mr-3>
+        <v-flex xs12 sm6>
           <v-layout>
             <v-flex xs11>
               <v-text-field append-icon="search" solo placeholder="Buscar Lugares" v-model="query_places"></v-text-field>
@@ -28,7 +28,7 @@
                   <v-list-tile @click="selectAll('places')">
                     <v-list-tile-title>Seleccionar Todos</v-list-tile-title>
                   </v-list-tile>
-                  <v-list-tile @click="DeselectAll('places')">
+                  <v-list-tile @click="deselectAll('places')">
                     <v-list-tile-title>Limpiar Todos</v-list-tile-title>
                   </v-list-tile>
                 </v-list>
@@ -39,7 +39,9 @@
           <v-list>
             <v-list-tile @click="empty()" v-for="place in filterBy(places,query_places)" :key="place.id">
               <v-list-tile-content @click.stop="select(place,'places')">
-                <v-list-tile-title>{{ place.name }}</v-list-tile-title>
+                <v-list-tile-title>
+                  <small v-if="place._order">({{place._order}})</small>
+                  {{ place.name }}</v-list-tile-title>
               </v-list-tile-content>
               <v-list-tile-action>
                 <v-checkbox @click="select(place,'places')" :input-value="place._selected"></v-checkbox>
@@ -48,7 +50,7 @@
           </v-list>
         </v-flex>
 
-        <v-flex sm6 ml-3>
+        <v-flex xs12 sm6>
           <v-layout>
             <v-flex xs11>
               <v-text-field append-icon="search" solo placeholder="Buscar Lugares" v-model="query_users"></v-text-field>
@@ -63,7 +65,7 @@
                   <v-list-tile @click="selectAll('users')">
                     <v-list-tile-title>Seleccionar Todos</v-list-tile-title>
                   </v-list-tile>
-                  <v-list-tile @click="DeselectAll('users')">
+                  <v-list-tile @click="deselectAll('users')">
                     <v-list-tile-title>Limpiar Todos</v-list-tile-title>
                   </v-list-tile>
                 </v-list>
@@ -75,7 +77,9 @@
           <v-list>
             <v-list-tile @click="empty()" v-for="user in filterBy(users,query_users)" :key="user.id">
               <v-list-tile-content @click.stop="select(user,'users')">
-                <v-list-tile-title>{{ user.name }}</v-list-tile-title>
+                <v-list-tile-title>
+                  <small v-if="user._order">({{user._order}})</small>
+                  {{ user.name }}</v-list-tile-title>
               </v-list-tile-content>
               <v-list-tile-action>
                 <v-checkbox @click="select(user,'users')" :input-value="user._selected"></v-checkbox>
@@ -138,7 +142,7 @@ export default {
 				var disableds = points.map((p) => {
 					return p.id;
 				});
-				places.filter((p) => {
+				places = places.filter((p) => {
 					return disableds.indexOf(p.id) == -1;
 				});
 			});
@@ -150,10 +154,12 @@ export default {
 			var results = [];
 			data.forEach((d) => {
 				var row = {
-					nombre: d.user.name
+					nombre: d.user.name,
+					telefono: d.user.phone
 				};
 				d.places.forEach((p, i) => {
 					row["Punto #" + (i + 1)] = p.name;
+					row["Ver En maps #" + (i + 1)] = `http://maps.google.com/maps?z=12&t=m&q=loc:${p.latlng.lat}+${p.latlng.lon}`;
 				});
 				results.push(row);
 			});
@@ -164,16 +170,19 @@ export default {
 			this.$set(r, "_selected", !r._selected);
 			if (r._selected) {
 				this["selected_" + type].push(r);
+				this.$set(r, "_order", this["selected_" + type].length);
 			} else {
 				var i = this["selected_" + type].indexOf(r);
+				this.$set(r, "_order", null);
 				this["selected_" + type].splice(i, 1);
 			}
 			console.log(this["selected_" + type]);
 		},
 
 		selectAll(type = "users") {
-			this[type].forEach((r) => {
+			this[type].forEach((r, i) => {
 				this.$set(r, "_selected", true);
+				this.$set(r, "_order", i + 1);
 			});
 			this["selected_" + type] = this[type].map((r) => {
 				return r;
@@ -182,6 +191,7 @@ export default {
 		deselectAll(type = "users") {
 			this[type].forEach((r) => {
 				this.$set(r, "_selected", false);
+				this.$set(r, "_order", null);
 			});
 			this["selected_" + type] = [];
 		},
